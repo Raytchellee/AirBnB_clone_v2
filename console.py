@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 """ Console Module """
+import re
 import cmd
 import sys
 from models.base_model import BaseModel
@@ -73,7 +74,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] is '{' and pline[-1] is'}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) is dict:
                         _args = pline
                     else:
@@ -114,19 +115,51 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
+        """ Create an object of any class """
         argt = args.split()
-        if not args:
+        if not argt:
             print("** class name missing **")
             return
-        if argt[0] in self.classes:
-            obj = self.parser_key(argt[1:])
-            inst = self.classes[argt[0]](**obj)
-        else:
+        elif argt[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        print(inst.id)
+        inst = HBNBCommand.classes[argt[0]]()
+        for item in argt[1:]:
+            if self.is_accept(item):
+                parts = item.split("=")
+                if parts[1][0] == "\"" and parts[1][-1] == "\"" or\
+                   parts[1][0] == "'" and parts[1][-1] == "'":
+                    parts[1] = parts[1][1:-1]
+                    parts[1] = parts[1].replace("_", " ")
+                else:
+                    try:
+                        parts[1] = int(parts[1])
+                    except ValueError:
+                        parts[1] = float(parts[1])
+                if self.is_global(inst, parts[0]):
+                    setattr(inst, parts[0], parts[1])
         inst.save()
+        print(inst.id)
+
+    def is_accept(self, string):
+        """ checks for acceptability """
+        is_s = re.compile('\w+=".+"')
+        is_i = re.compile('\w+=-*\d+')
+        is_f = re.compile('\w+=-*\d+\.\d+')
+        if is_s.match(string) is None and\
+            is_i.match(string) is None and\
+                is_f.match(string) is None:
+            return False
+        return True
+
+    def is_global(self, inst, item):
+        """ confirms global variables """
+        item_list = [elem for elem in dir(inst)
+                   if not callable(getattr(inst, elem)) and not
+                   elem.startswith("__")]
+        if item not in item_list:
+            return False
+        return True
 
     def help_create(self):
         """ Help information for the create method """
@@ -202,19 +235,20 @@ class HBNBCommand(cmd.Cmd):
     def do_all(self, args):
         """ Shows all objects, or all objects of a class"""
         print_list = []
-
+        obj = {}
         if args:
-            args = args.split(' ')[0]  # remove possible trailing args
+            args = args.split(' ')[0]
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            obj.update(storage.all(args))
+            for key, val in obj.items():
+                if key.split('.')[0] == args:
+                    print_list.append(str(val))
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
-
+            obj.update(storage.all())
+            for key, val in obj.items():
+                print_list.append(str(val))
         print(print_list)
 
     def help_all(self):
@@ -274,7 +308,7 @@ class HBNBCommand(cmd.Cmd):
                 args.append(v)
         else:  # isolate args
             args = args[2]
-            if args and args[0] is '\"':  # check for quoted arg
+            if args and args[0] == '\"':  # check for quoted arg
                 second_quote = args.find('\"', 1)
                 att_name = args[1:second_quote]
                 args = args[second_quote + 1:]
@@ -282,10 +316,10 @@ class HBNBCommand(cmd.Cmd):
             args = args.partition(' ')
 
             # if att_name was not quoted arg
-            if not att_name and args[0] is not ' ':
+            if not att_name and args[0] != ' ':
                 att_name = args[0]
             # check for quoted val arg
-            if args[2] and args[2][0] is '\"':
+            if args[2] and args[2][0] == '\"':
                 att_val = args[2][1:args[2].find('\"', 1)]
 
             # if att_val was not quoted arg
