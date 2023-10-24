@@ -12,7 +12,7 @@ from os import getenv
 db = getenv("HBNB_TYPE_STORAGE")
 
 
-@unittest.skipIf(db != 'db', "Testing DBstorage only") 
+@unittest.skipIf(db != 'db', "Testing DBstorage only")
 class test_DBStorage(unittest.TestCase):
     """Tests for DBStorage class"""
     @classmethod

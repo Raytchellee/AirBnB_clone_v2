@@ -47,7 +47,7 @@ class TestHBNBCommand(unittest.TestCase):
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             self.console.onecmd("destroy BaseModel {}".format(self.obj.id))
             output = mock_stdout.getvalue().strip()
-            self.assertFalse(os.path.exists("file.json"))  # Check if object is deleted
+            self.assertFalse(os.path.exists("file.json"))
 
     def test_all(self):
         """ """
@@ -60,7 +60,8 @@ class TestHBNBCommand(unittest.TestCase):
     def test_update(self):
         """ """
         with patch('sys.stdout', new_callable=StringIO):
-            self.console.onecmd("update BaseModel {} name 'New Name'".format(self.obj.id))
+            self.console.onecmd("update BaseModel {} name 'New Name'"
+                                .format(self.obj.id))
             self.assertEqual(self.obj.name, 'New Name')
 
 
