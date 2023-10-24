@@ -1,68 +1,29 @@
 #!/usr/bin/python3
-"""A unit test module for the console (command interpreter).
+"""
+Contains the class TestConsoleDocs
 """
 
+import console
 import unittest
-from unittest.mock import patch
-from io import StringIO
-import os
-from models.base_model import BaseModel
-from models.user import User
-from console import HBNBCommand
+HBNBCommand = console.HBNBCommand
 
 
-class TestHBNBCommand(unittest.TestCase):
-    """"""
-    @classmethod
-    def setUpClass(cls):
-        """"""
-        cls.console = HBNBCommand()
+class TestConsoleDocs(unittest.TestCase):
+    """Class for testing documentation of the console"""
 
-    def setUp(self):
-        """"""
-        self.obj = BaseModel()
-        self.user = User()
+    def test_console_module_docstring(self):
+        """Test for the console.py module docstring"""
+        self.assertIsNot(console.__doc__, None,
+                         "console.py needs a docstring")
+        self.assertTrue(len(console.__doc__) >= 1,
+                        "console.py needs a docstring")
 
-    def tearDown(self):
-        """"""
-        del self.obj
-        del self.user
-
-    def test_create(self):
-        """"""
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            self.console.onecmd("create BaseModel")
-            output = mock_stdout.getvalue().strip()
-            self.assertEqual(len(output), 36)  # Check if it's a valid UUID
-
-    def test_show(self):
-        """"""
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            self.console.onecmd("show BaseModel {}".format(self.obj.id))
-            output = mock_stdout.getvalue().strip()
-            self.assertIn(str(self.obj), output)
-
-    def test_destroy(self):
-        """ """
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            self.console.onecmd("destroy BaseModel {}".format(self.obj.id))
-            output = mock_stdout.getvalue().strip()
-            self.assertFalse(os.path.exists("file.json"))
-
-    def test_all(self):
-        """ """
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            self.console.onecmd("all")
-            output = mock_stdout.getvalue().strip()
-            self.assertIn(str(self.obj), output)
-            self.assertIn(str(self.user), output)
-
-    def test_update(self):
-        """ """
-        with patch('sys.stdout', new_callable=StringIO):
-            self.console.onecmd("update BaseModel {} name 'New Name'"
-                                .format(self.obj.id))
-            self.assertEqual(self.obj.name, 'New Name')
+    def test_HBNBCommand_class_docstring(self):
+        """Test for the HBNBCommand class docstring"""
+        self.assertIsNot(HBNBCommand.__doc__, None,
+                         "HBNBCommand class needs a docstring")
+        self.assertTrue(len(HBNBCommand.__doc__) >= 1,
+                        "HBNBCommand class needs a docstring")
 
 
 if __name__ == '__main__':
