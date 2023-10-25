@@ -27,10 +27,11 @@ class TestDBStorageDocs(unittest.TestCase):
         cls.dbs_f = inspect.getmembers(DBStorage, inspect.isfunction)
 
 class TestDBStorageDocs(unittest.TestCase):
-    """Tests to check the documentation and style of DBStorage class"""
+    """Class defines tests to check the documentation
+    and style of DBStorage class"""
     @classmethod
     def setUpClass(cls):
-        """Set up for the doc tests"""
+        """Set up function for the doc tests"""
         cls.dbs_f = inspect.getmembers(DBStorage, inspect.isfunction)
 
     def test_db_storage_class_docstring(self):
