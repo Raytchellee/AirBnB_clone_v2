@@ -81,8 +81,8 @@ class DBStorage:
         Base.metadata.create_all(self.__engine)
         factory = sessionmaker(
             bind=self.__engine, expire_on_commit=False)
-        Sesh = scoped_session(factory)
-        self.__session = Sesh()
+        sesh = scoped_session(factory)
+        self.__session = sesh()
 
     def close(self):
         """ closes the session"""
