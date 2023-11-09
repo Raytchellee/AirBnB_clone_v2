@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+"""Creating deploy files"""
 from fabric.api import local, put, run, env
 import datetime
 
@@ -6,6 +7,7 @@ env.hosts = ['100.26.167.206', '100.26.161.102']
 
 
 def do_pack():
+    """Creating deploy files"""
     local('mkdir -p versions')
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     filename = "versions/web_static_%s.tgz" % timestamp
@@ -14,6 +16,7 @@ def do_pack():
 
 
 def do_deploy(archive_path):
+    """Creating deploy files"""
     try:
         file_name = archive_path.split("/")[-1]
         file_without = file_name.split(".")[0]
