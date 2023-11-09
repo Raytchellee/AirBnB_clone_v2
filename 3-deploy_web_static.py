@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-"""Creates archive file on both servers"""
+"""creates archive file on both servers"""
 import re
-import datetime
 import os.path
+import datetime
 from fabric.api import *
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
@@ -10,15 +10,14 @@ env.hosts = ['100.26.167.206', '100.26.161.102']
 
 @runs_once
 def do_pack():
-    """Creates archive files"""
+    """ creates archive files """
     try:
         local('mkdir -p versions')
         curr_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         local('tar -cvzf "versions/web_static_{}.tgz" ./web_static'.
               format(curr_time), capture=True)
         return "versions/web_static_{}.tgz".format(curr_time)
-    except Exception as e:
-        print(e)
+    except:
         return None
 
 
@@ -40,3 +39,15 @@ def do_deploy(archive_path):
         return True
     except Exception:
         return False
+
+
+def deploy():
+    """ runs both commands"""
+    file_path = do_pack()
+    if (file_path is None):
+        return False
+    try:
+        local('ls %s' % file_path)
+    except:
+        return False
+    return do_deploy(file_path)
