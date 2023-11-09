@@ -4,6 +4,7 @@ import os
 from datetime import datetime
 from fabric.api import env, local, put, run, runs_once
 
+env.hosts = ['100.26.167.206', '100.26.161.102']
 
 def do_clean(number=0):
     """Deletes out-of-date archives of the static files.
