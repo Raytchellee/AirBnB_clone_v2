@@ -1,41 +1,32 @@
 #!/usr/bin/python3
-"""Creates archive file on both servers"""
-import re
+from fabric.api import local, put, run, env
 import datetime
-import os.path
-from fabric.api import *
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
 
 
-@runs_once
 def do_pack():
-    """Creates archive files"""
-    try:
-        local('mkdir -p versions')
-        curr_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        local('tar -cvzf "versions/web_static_{}.tgz" ./web_static'.
-              format(curr_time), capture=True)
-        return "versions/web_static_{}.tgz".format(curr_time)
-    except Exception as e:
-        print(e)
-        return None
+    local('mkdir -p versions')
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    filename = "versions/web_static_%s.tgz" % timestamp
+    local('tar -cvzf "%s" ./web_static' % filename)
+    return filename
+
 
 def do_deploy(archive_path):
-    """ deploys them to server """
     try:
-        curr_file = archive_path.split("/")[-1]
-        fd_name = curr_file.split(".")[0]
-        cur_path = "/data/web_static/releases/%s" % fd_name
+        file_name = archive_path.split("/")[-1]
+        file_without = file_name.split(".")[0]
+        dirname = "/data/web_static/releases/%s" % file_without
 
         put(archive_path, "/tmp")
-        run("sudo mkdir -p %s" % cur_path)
-        run("sudo tar -xzf /tmp/%s -C %s" % (curr_file, cur_path))
-        run("sudo rm /tmp/%s" % curr_file)
-        run("sudo mv %s/web_static/* %s/" % (cur_path, cur_path))
-        run("sudo rm -rf %s/web_static" % cur_path)
+        run("sudo mkdir -p %s" % dirname)
+        run("sudo tar -xzf /tmp/%s -C %s" % (file_name, dirname))
+        run("sudo rm /tmp/%s" % file_name)
+        run("sudo mv %s/web_static/* %s/" % (dirname, dirname))
+        run("sudo rm -rf %s/web_static" % dirname)
         run("rm -rf /data/web_static/current")
-        run("sudo ln -s %s/ /data/web_static/current" % cur_path)
+        run("sudo ln -s %s/ /data/web_static/current" % dirname)
         return True
     except Exception:
         return False
