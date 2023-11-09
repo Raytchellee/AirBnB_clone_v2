@@ -1,25 +1,30 @@
 #!/usr/bin/python3
-# Deletes archive files
-from fabric.api import *
+'''deletes out-of-date archives, using the function do_clean'''
 import os
-
-env.hosts = ['100.26.167.206', '100.26.161.102']
+from datetime import datetime
+from fabric.api import env, local, put, run, runs_once
 
 
 def do_clean(number=0):
-    """Removes outdated archives"""
-    if int(number) == 0:
-        number = 1
+    """Deletes out-of-date archives of the static files.
+    Args:
+        number (Any): The number of archives to keep.
+    """
+    archives = os.listdir('versions/')
+    archives.sort(reverse=True)
+    start = int(number)
+    if not start:
+        start += 1
+    if start < len(archives):
+        archives = archives[start:]
     else:
-        number = int(number)
-
-    foldrs = sorted(os.listdir("versions"))
-    [foldrs.pop() for _ in range(number)]
-    with lcd("versions"):
-        [local("sudo rm ./{}".format(idx)) for idx in foldrs]
-
-    with cd("/data/web_static/releases"):
-        foldrs = run("ls -tr").split()
-        foldrs = [idy for idy in foldrs if "web_static_" in idy]
-        [foldrs.pop() for _ in range(number)]
-        [run("sudo rm -rf ./{}".format(idy)) for idy in foldrs]
+        archives = []
+    for archive in archives:
+        os.unlink('versions/{}'.format(archive))
+    cmd_parts = [
+        "rm -rf $(",
+        "find /data/web_static/releases/ -maxdepth 1 -type d -iregex",
+        " '/data/web_static/releases/web_static_.*'",
+        " | sort -r | tr '\\n' ' ' | cut -d ' ' -f{}-)".format(start + 1)
+    ]
+    run(''.join(cmd_parts))
