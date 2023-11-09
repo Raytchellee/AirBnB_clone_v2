@@ -1,61 +1,41 @@
 #!/usr/bin/python3
-"""generates a .tgz file from the contens of web_static using FABRIC"""
-from fabric.api import *
+"""Creates archive file on both servers"""
+import re
 import datetime
 import os.path
-import re
-
+from fabric.api import *
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
 
 
 @runs_once
 def do_pack():
-    """ generarates .tgz archive from web_static folder """
-    local("mkdir -p versions")
-    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    r = local("tar -cvzf versions/web_static_{}.tgz ./web_static".
-              format(now), capture=True)
-    if r.succeeded:
-        return ("versions/web_static_{}.tgz".format(now))
-    else:
-        return
-
+    """Creates archive files"""
+    try:
+        local('mkdir -p versions')
+        curr_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        local('tar -cvzf "versions/web_static_{}.tgz" ./web_static'.
+              format(curr_time), capture=True)
+        return "versions/web_static_{}.tgz".format(curr_time)
+    except Exception as e:
+        print(e)
+        return None
 
 def do_deploy(archive_path):
-    """ distributes an archive to web servers """
-    if not os.path.exists(archive_path):
-        return False
-    upload = put(archive_path, "/tmp", use_sudo=True)
-    path = re.compile("versions\/(.+)\.tgz")
-    file_name = path.search(archive_path).group(1)
-    create_folder = run("sudo mkdir -p /data/web_static/releases/{}/".
-                        format(file_name))
-    unzip = run("sudo tar -xzf /tmp/{}.tgz -C /data/web_static/releases/{}/".
-                format(file_name, file_name))
-    remove_archive = run("sudo rm /tmp/{}.tgz".format(file_name))
-    string1 = "sudo mv /data/web_static/releases/{}/web_static/*"
-    string2 = "/data/web_static/releases/{}/"
-    string = string1 + " " + string2
-    move_files = run(string.format(file_name, file_name))
-    rm_webstatic = run("sudo rm -rf /data/web_static/releases/{}/web_static".
-                       format(file_name))
-    rm_link = run("sudo rm -rf /data/web_static/current")
-    s = "sudo ln -s /data/web_static/releases/{}/ /data/web_static/current"
-    create_l = run(s.format(file_name))
-    if upload.succeeded and create_folder.succeeded\
-        and create_folder.succeeded and unzip.succeeded\
-            and remove_archive.succeeded and move_files.succeeded\
-            and rm_webstatic.succeeded and rm_link.succeeded\
-            and create_l.succeeded:
+    """ deploys them to server """
+    try:
+        curr_file = archive_path.split("/")[-1]
+        fd_name = curr_file.split(".")[0]
+        cur_path = "/data/web_static/releases/%s" % fd_name
+
+        put(archive_path, "/tmp")
+        run("sudo mkdir -p %s" % cur_path)
+        run("sudo tar -xzf /tmp/%s -C %s" % (curr_file, cur_path))
+        run("sudo rm /tmp/%s" % curr_file)
+        run("sudo mv %s/web_static/* %s/" % (cur_path, cur_path))
+        run("sudo rm -rf %s/web_static" % cur_path)
+        run("rm -rf /data/web_static/current")
+        run("sudo ln -s %s/ /data/web_static/current" % cur_path)
         return True
-    return False
-
-
-def deploy():
-    """ pack, send and deploy web static """
-    path = do_pack()
-    if path is None:
+    except Exception:
         return False
-    deployment = do_deploy(path)
-    return deployment
