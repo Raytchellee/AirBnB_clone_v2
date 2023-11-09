@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 """Creates archive file on both servers"""
 import re
-import os.path
 import datetime
+from os import path
 from fabric.api import *
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
@@ -21,22 +21,23 @@ def do_pack():
         print(e)
         return None
 
-
 def do_deploy(archive_path):
     """ deploys them to server """
-    try:
-        curr_file = archive_path.split("/")[-1]
-        folder = curr_file.split(".")[0]
-        path = "/data/web_static/releases/%s" % folder
+    if path.exists(archive_path):
+        arch_path = archive_path.split('/')[1]
+        arch_route = "/tmp/{}".format(arch_path)
+        file_flder = arch_path.split('.')[0]
+        file_route = "/data/web_static/releases/{}/".format(file_flder)
 
-        put(archive_path, "/tmp")
-        run("sudo mkdir -p %s" % path)
-        run("sudo tar -xzf /tmp/%s -C %s" % (curr_file, path))
-        run("sudo rm /tmp/%s" % curr_file)
-        run("sudo mv %s/web_static/* %s/" % (path, path))
-        run("sudo rm -rf %s/web_static" % path)
+        put(archive_path, arch_route)
+        run("mkdir -p {}".format(file_route))
+        run("tar -xzf {} -C {}".format(arch_route, file_route))
+
+        run("rm {}".format(arch_route))
+        run("mv -f {}web_static/* {}".format(file_route, file_route))
+        run("rm -rf {}web_static".format(file_route))
         run("rm -rf /data/web_static/current")
-        run("sudo ln -s %s/ /data/web_static/current" % path)
+
+        run("ln -s {} /data/web_static/current".format(file_route))
         return True
-    except Exception:
-        return False
+    return False
