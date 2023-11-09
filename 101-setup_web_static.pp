@@ -1,6 +1,6 @@
-# Configures a web server for deployment of web_static.
+# Redoing tasl 0 with puppet
+# I am stressed!!!
 
-# Nginx configuration file
 $nginx_conf = "server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -41,11 +41,11 @@ file { '/data/web_static/releases':
   ensure => 'directory'
 } ->
 
-file { '/data/web_static/releases/test':
+file { '/data/web_static/shared':
   ensure => 'directory'
 } ->
 
-file { '/data/web_static/shared':
+file { '/data/web_static/releases/test':
   ensure => 'directory'
 } ->
 
