@@ -16,10 +16,10 @@ def do_clean(number=0):
     foldrs = sorted(os.listdir("versions"))
     [foldrs.pop() for _ in range(number)]
     with lcd("versions"):
-        [local("rm ./{}".format(idx)) for idx in foldrs]
+        [local("sudo rm ./{}".format(idx)) for idx in foldrs]
 
     with cd("/data/web_static/releases"):
         foldrs = run("ls -tr").split()
         foldrs = [idy for idy in foldrs if "web_static_" in idy]
         [foldrs.pop() for _ in range(number)]
-        [run("rm -rf ./{}".format(idy)) for idy in foldrs]
+        [run("sudo rm -rf ./{}".format(idy)) for idy in foldrs]
