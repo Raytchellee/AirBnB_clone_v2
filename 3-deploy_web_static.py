@@ -1,51 +1,51 @@
 #!/usr/bin/python3
-"""Create and distributes an archive to web servers"""
+"""creates archive file on both servers"""
+import re
 import os.path
-import time
-from fabric.api import local
-from fabric.operations import env, put, run
+import datetime
+from fabric.api import *
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
 
 
+@runs_once
 def do_pack():
-    """Generate an tgz archive from web_static folder"""
+    """ creates archive files """
     try:
-        local("mkdir -p versions")
-        local("tar -cvzf versions/web_static_{}.tgz web_static/".
-              format(time.strftime("%Y%m%d%H%M%S")))
-        return ("versions/web_static_{}.tgz".format(time.
-                                                    strftime("%Y%m%d%H%M%S")))
+        local('mkdir -p versions')
+        curr_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        local('tar -cvzf "versions/web_static_{}.tgz" ./web_static'.
+              format(curr_time), capture=True)
+        return "versions/web_static_{}.tgz".format(curr_time)
     except:
         return None
 
 
 def do_deploy(archive_path):
-    """Distribute an archive to web servers"""
-    if (os.path.isfile(archive_path) is False):
-        return False
-
+    """ deploys them to server """
     try:
-        file = archive_path.split("/")[-1]
-        folder = ("/data/web_static/releases/" + file.split(".")[0])
-        put(archive_path, "/tmp/")
-        run("mkdir -p {}".format(folder))
-        run("tar -xzf /tmp/{} -C {}".format(file, folder))
-        run("rm /tmp/{}".format(file))
-        run("mv {}/web_static/* {}/".format(folder, folder))
-        run("rm -rf {}/web_static".format(folder))
-        run('rm -rf /data/web_static/current')
-        run("ln -s {} /data/web_static/current".format(folder))
-        print("Deployment done")
+        curr_file = archive_path.split("/")[-1]
+        fd_name = curr_file.split(".")[0]
+        cur_path = "/data/web_static/releases/%s" % fd_name
+
+        put(archive_path, "/tmp")
+        run("sudo mkdir -p %s" % cur_path)
+        run("sudo tar -xzf /tmp/%s -C %s" % (curr_file, cur_path))
+        run("sudo rm /tmp/%s" % curr_file)
+        run("sudo mv %s/web_static/* %s/" % (cur_path, cur_path))
+        run("sudo rm -rf %s/web_static" % cur_path)
+        run("rm -rf /data/web_static/current")
+        run("sudo ln -s %s/ /data/web_static/current" % cur_path)
         return True
-    except:
+    except Exception:
         return False
 
 
 def deploy():
-    """Create and distributes an archive to web servers"""
-    try:
-        path = do_pack()
-        return do_deploy(path)
-    except:
+    """ runs both commands"""
+    file_path = do_pack()
+    print(file_path)
+    if file_path is None:
         return False
+
+    return do_deploy(file_path)
