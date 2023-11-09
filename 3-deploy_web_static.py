@@ -44,10 +44,8 @@ def do_deploy(archive_path):
 def deploy():
     """ runs both commands"""
     file_path = do_pack()
-    if (file_path is None):
+    print(file_path)
+    if file_path is None:
         return False
-    try:
-        local('ls %s' % file_path)
-    except:
-        return False
+
     return do_deploy(file_path)
