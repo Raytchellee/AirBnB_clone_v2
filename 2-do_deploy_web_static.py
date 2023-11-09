@@ -23,34 +23,20 @@ def do_pack():
 
 
 def do_deploy(archive_path):
-    """Deploys them to server"""
-    if not os.path.isfile(archive_path):
-        return False
-    file = put(archive_path, "/tmp", use_sudo=True)
-    route = re.compile(r"versions/(.+)\.tgz")
-    f = route.search(archive_path).group(1)
-    new_foldr = run("sudo mkdir -p /data/web_static/releases/{}/".
-                    format(f))
+    """ deploys them to server """
+    try:
+        curr_file = archive_path.split("/")[-1]
+        folder = curr_file.split(".")[0]
+        path = "/data/web_static/releases/%s" % folder
 
-    opened = run("sudo tar -xzf /tmp/{}.tgz -C /data/web_static/releases/{}/".
-                 format(f, f))
-    delete_file = run("sudo rm /tmp/{}.tgz".format(f))
-
-    mv_cmd = "sudo mv /data/web_static/releases/{}/web_static/*"
-    path_name = "/data/web_static/releases/{}/"
-    concat = mv_cmd + " " + path_name
-    run_file = run(concat.format(f, f))
-
-    del_path = run("sudo rm -rf /data/web_static/releases/{}/web_static".
-                   format(f))
-    del_link = run("sudo rm -rf /data/web_static/current")
-
-    cr_link = ("sudo ln -s /data/web_static/releases/{}/ "
-               "/data/web_static/current").format(f)
-    new_link = run(cr_link)
-
-    if all([file.succeeded, new_foldr.succeeded, opened.succeeded,
-            delete_file.succeeded, run_file.succeeded,
-            del_path.succeeded, del_link.succeeded, new_link.succeeded]):
+        put(archive_path, "/tmp")
+        run("sudo mkdir -p %s" % path)
+        run("sudo tar -xzf /tmp/%s -C %s" % (curr_file, path))
+        run("sudo rm /tmp/%s" % curr_file)
+        run("sudo mv %s/web_static/* %s/" % (path, path))
+        run("sudo rm -rf %s/web_static" % path)
+        run("rm -rf /data/web_static/current")
+        run("sudo ln -s %s/ /data/web_static/current" % path)
         return True
-    return False
+    except Exception:
+        return False
