@@ -1,35 +1,48 @@
 #!/usr/bin/python3
-"""Creating deploy files"""
-from fabric.api import local, put, run, env
-import datetime
+"""Distributes an archive to your web servers, using the function do_deploy"""
+from datetime import datetime
+from fabric.api import *
+from os import path
+
 
 env.hosts = ['100.26.167.206', '100.26.161.102']
 
 
+@runs_once
 def do_pack():
-    """Creating deploy files"""
-    local('mkdir -p versions')
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = "versions/web_static_%s.tgz" % timestamp
-    local('tar -cvzf "%s" ./web_static' % filename)
-    return filename
+    """Generates a .tgz archive from the contents
+    of the web_static folder of this repository.
+    """
+
+    d = datetime.now()
+    now = d.strftime('%Y%m%d%H%M%S')
+    path = "versions/web_static_{}.tgz".format(now)
+
+    local("mkdir -p versions")
+    local("tar -czvf {} web_static".format(path))
+    return path
 
 
 def do_deploy(archive_path):
-    """Creating deploy files"""
-    try:
-        file_name = archive_path.split("/")[-1]
-        file_without = file_name.split(".")[0]
-        dirname = "/data/web_static/releases/%s" % file_without
+    """Distributes a .tgz archive through web servers
+    """
 
-        put(archive_path, "/tmp")
-        run("sudo mkdir -p %s" % dirname)
-        run("sudo tar -xzf /tmp/%s -C %s" % (file_name, dirname))
-        run("sudo rm /tmp/%s" % file_name)
-        run("sudo mv %s/web_static/* %s/" % (dirname, dirname))
-        run("sudo rm -rf %s/web_static" % dirname)
+    if path.exists(archive_path):
+        archive = archive_path.split('/')[1]
+        a_path = "/tmp/{}".format(archive)
+        folder = archive.split('.')[0]
+        f_path = "/data/web_static/releases/{}/".format(folder)
+
+        put(archive_path, a_path)
+        run("mkdir -p {}".format(f_path))
+        run("tar -xzf {} -C {}".format(a_path, f_path))
+        run("rm {}".format(a_path))
+        run("mv -f {}web_static/* {}".format(f_path, f_path))
+        run("rm -rf {}web_static".format(f_path))
         run("rm -rf /data/web_static/current")
-        run("sudo ln -s %s/ /data/web_static/current" % dirname)
+        run("ln -s {} /data/web_static/current".format(f_path))
+
         return True
-    except Exception:
-        return False
+
+    return False
+
