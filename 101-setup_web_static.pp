@@ -1,28 +1,6 @@
 # Redoing tasl 0 with puppet
 # I am stressed!!!
 
-$nginx_conf = "server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    add_header X-Served-By ${hostname};
-    root   /var/www/html;
-    index  index.html index.htm;
-
-    location /hbnb_static {
-        alias /data/web_static/current;
-        index index.html index.htm;
-    }
-
-    location /redirect_me {
-        return 301 http://cuberule.com/;
-    }
-
-    error_page 404 /404.html;
-    location /404 {
-      root /var/www/html;
-      internal;
-    }
-}"
 
 package { 'nginx':
   ensure   => 'present',
@@ -83,7 +61,29 @@ exec { 'chown -R ubuntu:ubuntu /data/':
 
 file { '/etc/nginx/sites-available/default':
   ensure  => 'present',
-  content => $nginx_conf
+  content => "server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        add_header X-Served-By ${hostname};
+        root   /var/www/html;
+        index  index.html index.htm;
+    
+        
+        location /redirect_me {
+            return 301 http://cuberule.com/;
+        }
+        
+        location /hbnb_static {
+            alias /data/web_static/current;
+            index index.html index.htm;
+        }
+    
+        error_page 404 /404.html;
+        location /404 {
+          root /var/www/html;
+          internal;
+        }
+    }"
 } ->
 
 exec { 'nginx restart':
