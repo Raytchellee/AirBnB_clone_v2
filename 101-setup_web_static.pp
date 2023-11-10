@@ -70,7 +70,7 @@ file { '/etc/nginx/sites-available/default':
     
         
         location /redirect_me {
-            return 301 http://cuberule.com/;
+            rewrite ^ https://www.youtube.com/watch?v=QH2-TGUlw\u4? permanent;
         }
         
         location /hbnb_static {
