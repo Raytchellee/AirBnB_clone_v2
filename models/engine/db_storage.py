@@ -41,8 +41,8 @@ class DBStorage:
         """ show all objects cls as dictionary """
         obj = {}
         items = {'City': City, 'User': User,
-                  'Place': Place, 'State': State,
-                  'Review': Review, 'Amenity': Amenity}
+                 'Place': Place, 'State': State,
+                 'Review': Review, 'Amenity': Amenity}
 
         if cls is None:
             for cls in items:
