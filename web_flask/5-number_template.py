@@ -31,9 +31,9 @@ def python_text(text="is cool"):
 
 
 @flask_app.route('/number/<int:n>', strict_slashes=False)
-def num(x):
+def num(n):
     """ confirms only numbers in /number/n """
-    return "{} is a number".format(x)
+    return "{} is a number".format(n)
 
 
 @flask_app.route('/number_template/<int:n>', strict_slashes=False)
