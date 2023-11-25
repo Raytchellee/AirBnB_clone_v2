@@ -7,6 +7,7 @@ flask_app = Flask(__name__)
 
 @flask_app.route("/", strict_slashes=False)
 def home():
+    """Returns Hello HBNB to request"""
     return "Hello HBNB!"
 
 if __name__ == "__main__":
