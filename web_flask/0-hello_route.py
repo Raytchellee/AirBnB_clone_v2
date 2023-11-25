@@ -6,7 +6,7 @@ flask_app = Flask(__name__)
 
 
 @flask_app.route("/", strict_slashes=False)
-def home():
+def base():
     """Returns Hello HBNB to request"""
     return "Hello HBNB!"
 
