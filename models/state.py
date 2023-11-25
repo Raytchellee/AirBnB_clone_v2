@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """ State Module for HBNB project """
 import os
+import models
+from models.city import City
 from models.base_model import BaseModel, Base
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
@@ -20,11 +22,8 @@ class State(BaseModel, Base):
         def cities(self):
             """ returns cities in the state """
             from models import storage
-            city_list = []
-            store = storage._FileStorage__objects
-            for key, val in store.items():
-                parts = key.split(".")
-                if parts[0] == "City":
-                    if val.to_dict()["state_id"] == self.id:
-                        city_list.append(val)
-            return city_list
+            c_list = []
+            for c in list(models.storage.all(City).values()):
+                if self.id == c.state_id:
+                    c_list.append(c)
+            return c_list
