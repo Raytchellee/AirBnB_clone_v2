@@ -24,6 +24,7 @@ def c_text(text):
 
 
 @flask_app.route("/python/<text>", strict_slashes=False)
+@flask_app.route("/python/")
 def python_text(text="is cool"):
     """Returns HBNB to /python/<text> request"""
     return "Python %s" % str(text.replace("_", " "))
