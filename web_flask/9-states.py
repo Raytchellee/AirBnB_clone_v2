@@ -1,27 +1,29 @@
 #!/usr/bin/python3
-"""Renders State values"""
+"""
+This module starts a Flask web application
+"""
+
+from flask import Flask, render_template
 from models import *
 from models import storage
-from flask import Flask, render_template
+app = Flask(__name__)
 
 
-flask_app = Flask(__name__)
+@app.route('/states', strict_slashes=False)
+@app.route('/states/<state_id>', strict_slashes=False)
+def states(state_id=None):
+    """This function display the states and cities
+    listed in alphabetical order"""
+    states = storage.all("State")
+    if state_id is not None:
+        state_id = 'State.' + state_id
+    return render_template('9-states.html', states=states, state_id=state_id)
 
 
-@flask_app.route('/states', strict_slashes=False)
-@flask_app.route('/states/<state_id>', strict_slashes=False)
-def get_state(id=None):
-    """Renders available states"""
-    s = storage.all("State")
-    if id is not None:
-        id = 'State.' + id
-    return render_template('9-states.html', id=id, state=s)
-
-
-@flask_app.teardown_appcontext
-def reloads(exep):
-    """reloads the state"""
+@app.teardown_appcontext
+def teardown_db(exception):
+    """This function closes the storage on teardown"""
     storage.close()
 
 if __name__ == '__main__':
-    flask_app.run(host='0.0.0.0', port='5000')
+    app.run(host='0.0.0.0', port='5000')
