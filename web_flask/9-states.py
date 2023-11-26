@@ -10,7 +10,7 @@ flask_app = Flask(__name__)
 @flask_app.route('/states', strict_slashes=False)
 @flask_app.route('/states/<id>', strict_slashes=False)
 def get_states(id=None):
-    """Display states and cities listed in alphabetical order."""
+    """ Display states and cities listed in alphabetical order."""
     s = storage.all("State")
     if id is not None:
         id = 'State.' + id
