@@ -1,32 +1,32 @@
 #!/usr/bin/python3
-"""  starts a Flask web application """
-
+"""renders html files"""
 from models import storage
-from models.state import State
 from flask import Flask, render_template
-
 
 flask_app = Flask(__name__)
 
 
+@flask_app.route("/states", strict_slashes=False)
+def get_state():
+    """gets the state"""
+    s = storage.all("State")
+    return render_template("9-states.html", state=s)
+
+
+@flask_app.route("/states/<id>", strict_slashes=False)
+def get_cities(id):
+    """gets cities of a given id"""
+    for s in storage.all("State").values():
+        if s.id == id:
+            return render_template("9-states.html", state=s)
+    return render_template("9-states.html")
+
+
 @flask_app.teardown_appcontext
 def reloads(exep):
-    """reloads the state"""
+    """reloads all"""
     storage.close()
 
 
-@flask_app.route('/states', strict_slashes=False, defaults={'id': None})
-@flask_app.route('/states/<id>')
-def get_cities(id):
-    """ shows cities by state id """
-    s = list(storage.all(State).values())
-    if id is None:
-        return render_template('7-states_list.html', state=s)
-    for val in s:
-        if val.id == id:
-            return render_template('9-states.html', state=val)
-    return render_template('9-states.html', state=None)
-
-
 if __name__ == "__main__":
-    flask_app.run(host='0.0.0.0', port=5000)
+    flask_app.run(host="0.0.0.0")
